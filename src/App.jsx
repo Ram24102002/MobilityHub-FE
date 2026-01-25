@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import Products from './Pages/Products';
 import Footer from './components/common/Footer';
+import ImageUploader from './components/common/ImageUploader';
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />}/>
           <Route path="/products" element={<Products />} />
+          <Route path="/image-uploader" element={<ImageUploader />} />
         </Routes>
         <Footer />
       </Router>
