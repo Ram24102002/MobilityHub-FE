@@ -162,7 +162,7 @@ export default function Marketplace() {
         </div>
 
         {/* SEARCH (UI only for now) */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <div className="relative">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -174,7 +174,7 @@ export default function Marketplace() {
               className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none text-sm"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* CATEGORY FILTERS */}
         <div className="flex gap-2 mb-10 flex-wrap">

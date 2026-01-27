@@ -161,9 +161,13 @@ export default function BestSellingProducts() {
       <div className="container mx-auto max-w-7xl">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-4 fredoka-big">
-            Our Best-Selling / Frequently Rented Mobility Essentials
+          <h1 className="text-3xl md:text-6xl font-black text-gray-900 mb-4 fredoka-big">
+            Our Best-Selling
           </h1>
+          <p>&</p>
+          <h2 className="text-2xl md:text-6xl font-black text-gray-900 mb-4 fredoka-big">
+            Frequently Rented Mobility Essentials
+          </h2>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             These top picks deliver exceptional performance for everyday use.
           </p>
