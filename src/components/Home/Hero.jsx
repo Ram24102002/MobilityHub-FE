@@ -29,7 +29,7 @@ export default function Hero() {
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-12 items-center justify-center">
           {/* Left Content */}
           <div className="space-y-6">
-            <h1 className="text-4xl lg:text-5xl xl:text-7xl font-bold text-gray-900 leading-tight fredoka-big">
+            <h1 className="text-3xl lg:text-5xl xl:text-7xl font-bold text-gray-900 leading-tight fredoka-big">
               Buy/Rent our mobility aids in a single Click
               <span className="inline-block align-middle ml-2">
                 <MousePointerClick className="w-8 h-8 inline-block" />
@@ -53,7 +53,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="relative flex flex-col justify-center items-center pt-20 md:pt-0 pb-2">
+          <div className="relative flex flex-col justify-center items-center pt-7 md:pt-0 pb-2">
             <div className="relative z-10  w-[300px] h-[200px] lg:w-[500px] lg:h-[330px]   overflow-hidden flex justify-center item-center">
               <img
                 src={Logo}
