@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import Hero_wheelchair from "../../assets/Home/Hero_wheelchair.png";
 import Logo from "../../assets/LOGO/Logo_noBG.png";
 import Walking_stick from "../../assets/Home/Walking_stick.png";
@@ -31,9 +32,11 @@ function MarketplaceHero({ setActiveTab }) {
                 </button>
               </a>
 
-              <button className="border border-gray-300 hover:border-gray-400 text-gray-900 px-6 py-3 text-sm font-medium rounded-lg transition">
-                List an Item
-              </button>
+              <Link to="/ListItemForm">
+                <button className="w-full font-bold py-3 px-6 rounded-lg text-sm shadow-md transition-all bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white">
+                  List an Item
+                </button>
+              </Link>
             </div>
           </div>
 

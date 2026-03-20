@@ -1,15 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import Card2 from "../assets/Util/Card2";
-import wheelchair from "../assets/Products/Wheelchair.png";
-import Mobility_bed from "../assets/Products/Mobility_bed.png";
-import WalkingStick from "../assets/Products/WalkingStick.png";
-import walker from "../assets/Products/walker.png";
 import MarketplaceHero from "../components/Marketplace/MarketplaceHero";
 
 export default function Marketplace() {
   const [activeTab, setActiveTab] = useState("buy");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [dbProducts, setDbProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMarketplaceProducts();
+  }, []);
+
+  const fetchMarketplaceProducts = async () => {
+    try {
+      setIsLoading(true);
+      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/products`);
+      if (res.ok) {
+        const data = await res.json();
+        const marketplaceItems = data.filter(p => p.source === 'marketplace');
+        setDbProducts(marketplaceItems);
+      }
+    } catch (err) {
+      console.error("Failed to fetch marketplace products:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /* CATEGORY FILTER CONFIG (UI) */
   const categories = [
@@ -20,109 +39,17 @@ export default function Marketplace() {
     { id: "cane", name: "Canes" },
   ];
 
-  /* PRODUCTS (FINAL MODEL + subCategory ADDED) */
-  const products = [
-    {
-      id: 1,
-      slug: "wheelchair",
-      title: "Wheelchair",
-
-      category: "mobility-aid",
-      subCategory: "wheelchair",
-      categoryLabel: "Mobility Aid",
-
-      images: { primary: wheelchair },
-
-      available: true,
-      type: ["buy", "rent"],
-
-      pricing: {
-        buy: { mrp: 15000, offer: 12000 },
-        rent: { monthly: 1000 },
-      },
-
-      description:
-        "Reliable and comfortable wheelchair designed for daily mobility support.",
-    },
-
-    {
-      id: 2,
-      slug: "mobility-bed",
-      title: "Mobility Bed",
-
-      category: "mobility-aid",
-      subCategory: "bed",
-      categoryLabel: "Mobility Aid",
-
-      images: { primary: Mobility_bed },
-
-      available: false,
-      type: ["buy"],
-
-      pricing: {
-        buy: { mrp: 78550, offer: 72550 },
-      },
-
-      description:
-        "Hospital-grade mobility bed with adjustable positions for patient comfort.",
-    },
-
-    {
-      id: 3,
-      slug: "walking-stick",
-      title: "Walking Stick",
-
-      category: "mobility-aid",
-      subCategory: "cane",
-      categoryLabel: "Mobility Aid",
-
-      images: { primary: WalkingStick },
-
-      available: true,
-      type: ["buy", "rent"],
-
-      pricing: {
-        buy: { mrp: 1999.85, offer: 1799.85 },
-        rent: { monthly: 300 },
-      },
-
-      description:
-        "Compact and sturdy walking stick for everyday balance support.",
-    },
-
-    {
-      id: 4,
-      slug: "walker",
-      title: "Walker",
-
-      category: "mobility-aid",
-      subCategory: "walker",
-      categoryLabel: "Mobility Aid",
-
-      images: { primary: walker },
-
-      available: true,
-      type: ["rent"],
-
-      pricing: {
-        rent: { monthly: 500 },
-      },
-
-      description:
-        "Stable walker providing enhanced balance and support for mobility.",
-    },
-  ];
-
   /* FILTER LOGIC (CORRECT & FINAL) */
-  const filteredListings = products.filter((product) => {
+  const filteredListings = dbProducts.filter((product) => {
     if (
       selectedCategory !== "all" &&
+      product.category !== selectedCategory && 
       product.subCategory !== selectedCategory
     ) {
       return false;
     }
 
-    if (!product.type.includes(activeTab)) {
+    if (!product.type || !product.type.includes(activeTab)) {
       return false;
     }
 
@@ -194,17 +121,24 @@ export default function Marketplace() {
         </div>
 
         {/* PRODUCT GRID */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredListings.map((product) => (
-            <Card2 key={product.id} product={product} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-20 text-gray-500 font-medium">Loading marketplace listings...</div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredListings.map((product) => (
+                <Card2 key={product._id || product.id} product={product} />
+              ))}
+            </div>
 
-        {/* EMPTY STATE */}
-        {filteredListings.length === 0 && (
-          <p className="text-center text-gray-500 mt-10">
-            No products found for this category.
-          </p>
+            {/* EMPTY STATE */}
+            {filteredListings.length === 0 && (
+              <div className="text-center text-gray-500 mt-16 py-10 bg-white rounded-2xl border border-gray-200">
+                <p className="font-bold text-gray-900 text-xl mb-2">No listings found</p>
+                <p>There are no marketplace items available for this category right now.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

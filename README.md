@@ -1,16 +1,75 @@
-# React + Vite
+# Mobility Hub - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Mobility Hub is a web application frontend built with modern React. It provides an intuitive platform for exploring, buying, selling, and listing mobility-related products in a marketplace setting.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Home & Navigation**: Beautiful and responsive landing page.
+- **Product Catalog**: Browse available mobility products.
+- **Marketplace**: Dedicated space for users to discover items.
+- **List an Item**: A comprehensive form for users to add their own products to the platform.
+- **Product Details**: Detailed view for individual products.
+- **Support & About**: Contact and informational pages.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19**: Component-based UI formulation.
+- **Vite**: Next-generation frontend tooling for faster builds and hot module replacement.
+- **Tailwind CSS v4**: Utility-first CSS framework for rapid UI development.
+- **React Router v7**: Declarative routing for React applications.
+- **Lucide React**: Beautiful and consistent icon set.
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```text
+src/
+├── assets/         # Static assets like images and icons
+├── components/     # Reusable UI components
+│   ├── common/     # Navbar, Footer, etc.
+│   ├── Home/       # Home page specific components
+│   └── Marketplace/# Marketplace specific components
+├── Pages/          # Route components (Home, Products, Marketplace, etc.)
+├── App.jsx         # Main application component and routing setup
+└── main.jsx        # Application entry point
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd MobilityHub-FE
+   ```
+
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and visit the local port (usually `http://localhost:5173`) specified by Vite.
+
+## Scripts
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the app for production.
+- `npm run lint`: Runs ESLint to check code quality.
+- `npm run preview`: Locally preview the production build.
+
+## Fonts and Design
+
+The application utilizes Google Fonts:
+- **Fredoka**: For headers and distinct typography.
+- **Poppins**: For clean, readable body text.
+
+Styling is handled globally via `index.css` alongside Tailwind CSS utility classes.

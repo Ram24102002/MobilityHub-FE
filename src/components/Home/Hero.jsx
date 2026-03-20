@@ -42,11 +42,13 @@ export default function Hero() {
             </p>
 
             <div className="flex gap-6">
-              <button className="bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold px-8 py-3.5 rounded-lg transition-colors duration-300 shadow-xl hover:shadow-2xl flex justify">
-                Rent / Buy <ShoppingCart />
-              </button>
+              <Link to='/rent-buy'>
+                <button className="bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-all flex justify text-center items-center gap-2">
+                  Rent / Buy <ShoppingCart />
+                </button>
+              </Link>
               <Link to="/marketplace">
-                <button className="bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold px-8 py-3.5 rounded-lg transition-colors duration-300 shadow-xl hover:shadow-2xl flex justify">
+                <button className="bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-all flex justify text-center items-center gap-2">
                   Explore Marketplace <Flag />
                 </button>
               </Link>

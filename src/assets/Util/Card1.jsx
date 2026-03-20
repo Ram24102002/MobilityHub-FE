@@ -44,7 +44,7 @@ function Card1({ listing }) {
           ) : null}
         </div>
 
-        <button className="w-full mt-4 bg-gray-900 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition">
+        <button className="w-full mt-4 font-bold py-2.5 px-6 rounded-lg text-sm shadow-md transition-all bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white">
           View Details
         </button>
       </div>

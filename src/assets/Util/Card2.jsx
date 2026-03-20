@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { formatPrice } from "./formatPrice";
 
 function Card2({ product }) {
@@ -67,18 +68,22 @@ function Card2({ product }) {
         </div>
 
         {/* CTA pinned to bottom */}
-        <button
-          disabled={!isAvailable}
-          className={`mt-auto w-full font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-all
-            ${
-              isAvailable
-                ? "bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white"
-                : "bg-gray-300 text-gray-600 cursor-not-allowed"
-            }
-          `}
-        >
-          {isAvailable ? "View Product" : "Unavailable"}
-        </button>
+        {isAvailable ? (
+          <Link to={`/product/${product._id || product.id}`} className="mt-auto block w-full">
+            <button
+              className="w-full font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-all bg-orange-500 hover:bg-orange-600 hover:scale-[1.02] text-white"
+            >
+              View Product
+            </button>
+          </Link>
+        ) : (
+          <button
+            disabled
+            className="mt-auto w-full font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-all bg-gray-300 text-gray-600 cursor-not-allowed"
+          >
+            Unavailable
+          </button>
+        )}
       </div>
     </div>
   );

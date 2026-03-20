@@ -1,69 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { formatPrice } from "../assets/Util/formatPrice";
 
-// Mock product data (FINAL MODEL)
-const productData = {
-  id: 1,
-  slug: "ergonomic-office-chair",
-  title: "Modern Ergonomic Office Chair",
-
-  category: "furniture",
-  categoryLabel: "Furniture",
-
-  images: {
-    primary:
-      "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800&h=600&fit=crop",
-  },
-
-  available: true,
-
-  type: ["buy", "rent"],
-
-  pricing: {
-    buy: {
-      mrp: 45000,
-      offer: 32000,
-    },
-    rent: {
-      monthly: 2500,
-    },
-  },
-
-  description:
-    "Experience ultimate comfort with our premium ergonomic office chair. Designed for long hours of work, featuring adjustable height, lumbar support, and breathable mesh fabric.",
-
-  features: [
-    "360-degree swivel rotation",
-    "Adjustable armrests and seat height",
-    "Premium mesh backrest for breathability",
-    "Heavy-duty nylon base with smooth-rolling casters",
-    "Weight capacity: 120 kg",
-  ],
-
-  specifications: {
-    Material: "Mesh & Steel Frame",
-    Dimensions: "65 × 65 × 120 cm",
-    Weight: "15 kg",
-    Color: "Black",
-    Warranty: "2 Years",
-  },
-};
-
 function ProductViewPage() {
-  const product = productData;
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedOption, setSelectedOption] = useState("buy");
+
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      setIsLoading(true);
+      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/products/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProduct(data);
+        
+        // Auto-select based on availability
+        const hasBuy = data.type?.includes("buy");
+        setSelectedOption(hasBuy ? "buy" : "rent");
+      } else {
+        setProduct(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setProduct(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center font-bold text-gray-500 text-xl animate-pulse">
+          Loading Product Details...
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Product Not Found</h2>
+          <p className="text-gray-500 mb-6">The item you are looking for does not exist or was removed.</p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="text-white bg-orange-500 hover:bg-orange-600 font-bold py-3 px-8 rounded-lg transition-colors"
+          >
+            ← Back to Browsing
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const hasBuy = product.type?.includes("buy");
   const hasRent = product.type?.includes("rent");
-
-  const [selectedOption, setSelectedOption] = useState(hasBuy ? "buy" : "rent");
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <button className="text-gray-600 hover:text-gray-900 font-medium">
-            ← Back to Products
+          <button onClick={() => window.history.back()} className="font-bold py-2 px-4 rounded-lg shadow-md transition-all bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white flex items-center gap-2">
+            ← Back
           </button>
         </div>
       </header>
@@ -83,7 +92,7 @@ function ProductViewPage() {
               <img
                 src={product.images.primary}
                 alt={product.title}
-                className="w-full h-96 object-cover rounded-lg"
+                className="w-full h-96 object-contain rounded-lg"
               />
             </div>
           </div>
@@ -186,6 +195,7 @@ function ProductViewPage() {
             <div className="space-y-3">
               <button
                 disabled={!product.available}
+                onClick={() => navigate(`/checkout/${product._id || product.id}?type=${selectedOption}`)}
                 className={`w-full font-bold py-4 rounded-lg text-lg shadow-md transition-all
                   ${
                     product.available
@@ -196,8 +206,8 @@ function ProductViewPage() {
               >
                 {product.available
                   ? selectedOption === "buy"
-                    ? "Add to Cart – Buy"
-                    : "Add to Cart – Rent"
+                    ? "Checkout (Buy)"
+                    : "Checkout (Rent)"
                   : "Currently Unavailable"}
               </button>
 
@@ -209,30 +219,34 @@ function ProductViewPage() {
             </div>
 
             {/* Features */}
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-              <h3 className="font-bold text-gray-900 mb-4">Key Features</h3>
-              <ul className="space-y-2">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex gap-2 text-gray-700">
-                    <span className="text-orange-500">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {product.features && product.features.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-md">
+                <h3 className="font-bold text-gray-900 mb-4">Key Features</h3>
+                <ul className="space-y-2">
+                  {product.features.map((feature, index) => (
+                    <li key={index} className="flex gap-2 text-gray-700">
+                      <span className="text-orange-500">✓</span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Specifications */}
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-              <h3 className="font-bold text-gray-900 mb-4">Specifications</h3>
-              <dl className="space-y-3">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <div key={key} className="flex justify-between border-b pb-2">
-                    <dt className="text-gray-600">{key}</dt>
-                    <dd className="text-gray-900">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            {product.specifications && Object.keys(product.specifications).length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-md">
+                <h3 className="font-bold text-gray-900 mb-4">Specifications</h3>
+                <dl className="space-y-3">
+                  {Object.entries(product.specifications).map(([key, value]) => (
+                    <div key={key} className="flex justify-between border-b pb-2">
+                      <dt className="text-gray-600">{key}</dt>
+                      <dd className="text-gray-900">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
           </div>
         </div>
       </main>

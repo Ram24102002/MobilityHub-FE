@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { Upload, X, Plus, Check } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ListItemForm() {
+  const { token } = useAuth();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
-    category: "mobility-aid",
+    category: "",
     available: true,
     type: [],
     buyMrp: "",
@@ -65,13 +70,42 @@ export default function ListItemForm() {
     setFormData({ ...formData, images: [] });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const categoryLabelMappings = {
+      "wheelchair": "Wheelchair",
+      "bed": "Bed",
+      "walker": "Walker",
+      "cane": "Cane",
+      "other": "Other"
+    };
+    
+    const finalCategoryLabel = categoryLabelMappings[formData.category] || "Other";
+    const finalTitle = formData.category === "other" ? formData.title : finalCategoryLabel;
+
+    // Active Validation Feedback
+    if (!formData.category) return alert("Validation Failed: Please select a Category.");
+    if (formData.category === "other" && !formData.title.trim()) return alert("Validation Failed: Please enter a Product Name for your custom item.");
+    if (formData.type.length === 0) return alert("Validation Failed: Please select at least one option under 'Available For' (Buy or Rent).");
+    if (formData.type.includes("buy")) {
+      if (!String(formData.buyMrp).trim()) return alert("Validation Failed: Please enter the MRP price.");
+      if (!String(formData.buyOffer).trim()) return alert("Validation Failed: Please enter the Offer Price.");
+    }
+    if (formData.type.includes("rent")) {
+      if (!String(formData.rentMonthly).trim()) return alert("Validation Failed: Please enter the Monthly Rent amount.");
+    }
+    if (!formData.description.trim()) return alert("Validation Failed: Please provide a Product Description.");
+    
+    if (!token) {
+      return alert("You must be logged in to list an item.");
+    }
+
+    setIsSubmitting(true);
+
     const productData = {
-      id: Date.now(),
-      slug: formData.slug || formData.title.toLowerCase().replace(/\s+/g, "-"),
-      title: formData.title,
+      slug: finalTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now().toString().slice(-4),
+      title: finalTitle,
       category: formData.category,
-      categoryLabel: "Mobility Aid",
+      categoryLabel: finalCategoryLabel,
       images: {
         primary: imagePreview || null,
       },
@@ -97,16 +131,31 @@ export default function ListItemForm() {
       },
     };
 
-    console.log("Product Data:", JSON.stringify(productData, null, 2));
-    alert("Item listed successfully! Check console for product data.");
-  };
+    try {
+      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      });
 
-  const isFormValid =
-    formData.title &&
-    formData.type.length > 0 &&
-    formData.description &&
-    ((formData.type.includes("buy") && formData.buyMrp && formData.buyOffer) ||
-      (formData.type.includes("rent") && formData.rentMonthly));
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to list item");
+      }
+
+      alert("🎉 Item successfully listed in the Marketplace!");
+      navigate("/admin"); // Optional: Navigate them somewhere else like their profile or admin panel
+    } catch (err) {
+      console.error(err);
+      alert("Error listing item: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F1E8" }}>
@@ -135,35 +184,7 @@ export default function ListItemForm() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Product Title *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., Wheelchair"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Slug (URL-friendly name)
-                  </label>
-                  <input
-                    type="text"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., wheelchair (auto-generated if left empty)"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Category
+                    Item Category *
                   </label>
                   <select
                     name="category"
@@ -171,9 +192,30 @@ export default function ListItemForm() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
                   >
-                    <option value="mobility-aid">Mobility Aid</option>
+                    <option value="" disabled>Select a Category...</option>
+                    <option value="wheelchair">Wheelchair</option>
+                    <option value="bed">Hospital Bed</option>
+                    <option value="walker">Walker</option>
+                    <option value="cane">Cane / Crutch</option>
+                    <option value="other">Other Mobility Aids</option>
                   </select>
                 </div>
+
+                {formData.category === 'other' && (
+                  <div className="animate-fade-in">
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Custom Product Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="e.g., Electric Stair Climber"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
@@ -330,7 +372,7 @@ export default function ListItemForm() {
                     ))}
                     <button
                       onClick={addFeature}
-                      className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:border-orange-500 hover:text-orange-500 transition-colors"
+                      className="flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-lg shadow-md transition-all bg-orange-500 hover:bg-orange-600 hover:scale-105 text-white"
                     >
                       <Plus className="w-5 h-5" />
                       <span>Add Feature</span>
@@ -347,13 +389,13 @@ export default function ListItemForm() {
               </h2>
 
               {!imagePreview ? (
-                <label className="block cursor-pointer">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-orange-500 transition-colors">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-900 font-medium mb-1">
-                      Click to upload image
+                <label className="block cursor-pointer w-64 h-64 mx-auto">
+                  <div className="w-full h-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-center hover:border-orange-500 hover:bg-orange-50 transition-all">
+                    <Upload className="w-10 h-10 text-gray-400 mb-3" />
+                    <p className="text-gray-900 font-bold mb-1 text-sm">
+                      Upload Image
                     </p>
-                    <p className="text-sm text-gray-600">PNG, JPG up to 5MB</p>
+                    <p className="text-xs text-gray-500">Square dimension</p>
                   </div>
                   <input
                     type="file"
@@ -363,15 +405,15 @@ export default function ListItemForm() {
                   />
                 </label>
               ) : (
-                <div className="relative">
+                <div className="relative w-64 h-64 mx-auto group">
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                    className="w-full h-full object-cover rounded-xl border-2 border-orange-200 shadow-md"
                   />
                   <button
                     onClick={removeImage}
-                    className="absolute top-3 right-3 p-2 bg-white rounded-full border border-gray-200 hover:border-red-500 hover:text-red-500 transition-colors"
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg scale-90 group-hover:scale-100"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -383,15 +425,13 @@ export default function ListItemForm() {
             <div className="flex gap-4 pt-6 border-t border-gray-200">
               <button
                 onClick={handleSubmit}
-                disabled={!isFormValid}
-                className={`flex-1 flex items-center justify-center gap-2 font-semibold py-4 px-6 rounded-lg transition-colors ${
-                  isFormValid
-                    ? "bg-orange-500 hover:bg-orange-600 text-white"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                disabled={isSubmitting}
+                className={`flex-1 flex items-center justify-center gap-2 font-semibold py-4 px-6 rounded-lg transition-all shadow-md ${
+                  isSubmitting ? "bg-orange-400 cursor-not-allowed opacity-70" : "bg-orange-500 hover:bg-orange-600 hover:scale-[1.01]"
+                } text-white`}
               >
                 <Check className="w-5 h-5" />
-                List Item
+                {isSubmitting ? "Listing Item..." : "List Item"}
               </button>
             </div>
           </div>

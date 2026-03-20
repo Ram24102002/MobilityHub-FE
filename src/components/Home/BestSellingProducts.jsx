@@ -1,157 +1,33 @@
-import React from "react";
-import wheelchair from "../../assets/Products/Wheelchair.png";
-import Mobility_bed from "../../assets/Products/Mobility_bed.png";
-import WalkingStick from "../../assets/Products/WalkingStick.png";
-import walker from "../../assets/Products/walker.png";
+import React, { useState, useEffect } from "react";
 import Card2 from "../../assets/Util/Card2";
 
 export default function BestSellingProducts() {
-  const products = [
-    {
-      id: 1,
-      slug: "wheelchair",
-      title: "Wheelchair",
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      category: "mobility-aid",
-      categoryLabel: "Mobility Aid",
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const response = await fetch(`${backendUrl}/api/products`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-      images: {
-        primary: wheelchair,
-      },
+    fetchProducts();
+  }, []);
 
-      available: true,
-
-      type: ["buy", "rent"],
-
-      pricing: {
-        buy: {
-          mrp: 15000,
-          offer: 12000,
-        },
-        rent: {
-          monthly: 1000,
-        },
-      },
-
-      description:
-        "Reliable and comfortable wheelchair designed for daily mobility support.",
-
-      features: [
-        "Lightweight and durable frame",
-        "Comfortable seating",
-        "Easy maneuverability",
-      ],
-
-      specifications: {
-        Category: "Mobility Aid",
-      },
-    },
-
-    {
-      id: 2,
-      slug: "mobility-bed",
-      title: "Mobility Bed",
-
-      category: "mobility-aid",
-      categoryLabel: "Mobility Aid",
-
-      images: {
-        primary: Mobility_bed,
-      },
-
-      available: false,
-
-      type: ["buy"],
-
-      pricing: {
-        buy: {
-          mrp: 78550,
-          offer: 72550,
-        },
-      },
-
-      description:
-        "Hospital-grade mobility bed with adjustable positions for patient comfort.",
-
-      features: [
-        "Adjustable height and angles",
-        "Strong metal frame",
-        "Suitable for long-term care",
-      ],
-
-      specifications: {
-        Category: "Mobility Aid",
-      },
-    },
-
-    {
-      id: 3,
-      slug: "walking-stick",
-      title: "Walking Stick",
-
-      category: "mobility-aid",
-      categoryLabel: "Mobility Aid",
-
-      images: {
-        primary: WalkingStick,
-      },
-
-      available: true,
-
-      type: ["buy", "rent"],
-
-      pricing: {
-        buy: {
-          mrp: 1999.85,
-          offer: 1799.85,
-        },
-        rent: {
-          monthly: 300,
-        },
-      },
-
-      description:
-        "Compact and sturdy walking stick for everyday balance support.",
-
-      features: ["Lightweight design", "Comfortable grip", "Anti-slip tip"],
-
-      specifications: {
-        Category: "Mobility Aid",
-      },
-    },
-
-    {
-      id: 4,
-      slug: "walker",
-      title: "Walker",
-
-      category: "mobility-aid",
-      categoryLabel: "Mobility Aid",
-
-      images: {
-        primary: walker,
-      },
-
-      available: true,
-
-      type: ["rent"],
-
-      pricing: {
-        rent: {
-          monthly: 500,
-        },
-      },
-
-      description:
-        "Stable walker providing enhanced balance and support for mobility.",
-
-      features: ["Foldable frame", "Height adjustable", "Non-slip rubber tips"],
-
-      specifications: {
-        Category: "Mobility Aid",
-      },
-    },
-  ];
+  const ownProducts = products.filter((p) => p.source === "own" && p.type.includes("buy"));
+  const marketplaceProducts = products.filter((p) => p.source === "marketplace" && p.type.includes("buy"));
 
   return (
     <div
@@ -173,12 +49,45 @@ export default function BestSellingProducts() {
           </p>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <Card2 key={product.id} product={product} />
-          ))}
-        </div>
+        {/* Loading / Error States */}
+        {loading && <div className="text-center text-xl font-bold py-10">Loading products from Database...</div>}
+        {error && <div className="text-center text-red-500 font-bold py-10">Error: {error}</div>}
+
+        {/* Our Own Products Grid */}
+        {!loading && !error && (
+          <div className="mb-16">
+            <h3 className="text-3xl font-bold text-gray-900 mb-8 border-b-4 border-orange-500 inline-block pb-2">
+              Our Own Products
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {ownProducts.length > 0 ? (
+                ownProducts.map((product) => (
+                  <Card2 key={product._id || product.id || product.slug} product={product} />
+                ))
+              ) : (
+                <p className="text-gray-500 italic">No own products available.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Marketplace Products Grid */}
+        {!loading && !error && (
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-8 border-b-4 border-orange-500 inline-block pb-2">
+              Marketplace Products
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {marketplaceProducts.length > 0 ? (
+                marketplaceProducts.map((product) => (
+                  <Card2 key={product._id || product.id || product.slug} product={product} />
+                ))
+              ) : (
+                <p className="text-gray-500 italic">No marketplace products available.</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
